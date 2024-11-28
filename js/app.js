@@ -92,8 +92,7 @@ async function displayWeather(e) {
     
     e.preventDefault();
     city_name = searchInput.value;
-    let weather = await getWeather(city_name);
-    console.table(weather);
+    let weather = await getWeather(city_name);;
     let temperature = Math.round(weather.list[0].main.temp - 273.15);
 
 
