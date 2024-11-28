@@ -86,27 +86,7 @@ function emojiFlags(weather) {
     }
 }
 
-searchInput.addEventListener('keyup', async (e) => {
-    city_name = e.target.value;    
-    let cities = await getCities(city_name);
-
-    for (const city of cities) {
-        let optionValue = city.name + ', ' + city.country + ', ' + city.state;
-        
-        if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-            continue;
-        }
-        if (!city.state) {
-            optionValue = city.name + ', ' + city.country;
-        }
-        
-        const option = document.createElement('option');
-        option.value = optionValue;
-        document.querySelector('#cities').appendChild(option);
-    }
-});
-
-searchButton.addEventListener('click', async (e) => {
+async function displayWeather(e) {
     const previousCards = document.querySelectorAll('.weather--card');
     previousCards.forEach(card => card.remove());
     
@@ -138,7 +118,32 @@ searchButton.addEventListener('click', async (e) => {
 
     weatherInfo.appendChild(card);
     searchInput.value = '';
+}
+
+searchInput.addEventListener('keyup', async (e) => {
+    city_name = e.target.value;    
+    let cities = await getCities(city_name);
+
+    for (const city of cities) {
+        let optionValue = city.name + ', ' + city.country + ', ' + city.state;
+        
+        if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+            continue;
+        }
+        if (!city.state) {
+            optionValue = city.name + ', ' + city.country;
+        }
+        
+        const option = document.createElement('option');
+        option.value = optionValue;
+        document.querySelector('#cities').appendChild(option);
+    }
 });
+
+searchButton.addEventListener('click', async (e) => {
+    displayWeather(e);
+});
+
 
 compareButton.addEventListener('click', async (e) => {
     e.preventDefault();
