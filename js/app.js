@@ -1,5 +1,6 @@
 let API_WEATHER_URL;
 let API_CITIES_URL;
+let city_name = "";
 
 const searchInput = document.querySelector(".search--form_input");
 const searchButton = document.querySelector(".search--form_button");
@@ -7,7 +8,6 @@ const compareButton = document.querySelector("#search--form_button_compare");
 const weatherInfo = document.querySelector(".weather");
 const flags = await getFlags();
 
-let city_name = "";
 
 async function getCities(city_name) {
 	API_CITIES_URL = `https://13-weather-api.vercel.app/cities/${city_name}`;
@@ -85,42 +85,55 @@ function emojiFlags(weather) {
 	}
 }
 
+async function removeDatalist() {
+    try {
+        const datalist = document.querySelectorAll(".search--form_option");
+        datalist.forEach((option) => option.remove());
+    } catch (error) {
+        console.error(error);
+    }
+}
+
 async function displayWeather(e) {
+    e.preventDefault();
+    await removeDatalist();
 	const previousCards = document.querySelectorAll(".weather--card");
 	previousCards.forEach((card) => card.remove());
-	const datalist = document.querySelectorAll("search--form_option");
-	datalist.forEach((option) => option.remove());
 
-	e.preventDefault();
+    if (searchInput.value == "") {
+        return;
+    }
+
 	city_name = searchInput.value;
-	let weather = await getWeather(city_name);
-	let temperature = Math.round(weather.list[0].main.temp - 273.15);
-
-	let card = document.createElement("div");
-	card.classList.add("weather--card");
-
-	let title = document.createElement("h2");
-	title.classList.add("weather--card_title");
-	title.textContent = city_name + " " + emojiFlags(weather);
-
-	let temp = document.createElement("p");
-	temp.classList.add("weather--card_temp");
-	temp.textContent = emojiTemperature(weather) + " " + temperature + "°C";
-
-	let description = document.createElement("p");
-	description.classList.add("weather--card_description");
-	description.textContent = emojiWeather(weather) + " " + weather.list[0].weather[0].description;
-
-	card.appendChild(title);
-	card.appendChild(temp);
-	card.appendChild(description);
-
-	weatherInfo.appendChild(card);
 	searchInput.value = "";
+
+	let weather = await getWeather(city_name);
+	let temperature = Math.round(weather.list[0].main.temp - 273.15);
+
+	let card = document.createElement("div");
+	card.classList.add("weather--card");
+
+	let title = document.createElement("h2");
+	title.classList.add("weather--card_title");
+	title.textContent = city_name + " " + emojiFlags(weather);
+
+	let temp = document.createElement("p");
+	temp.classList.add("weather--card_temp");
+	temp.textContent = emojiTemperature(weather) + " " + temperature + "°C";
+
+	let description = document.createElement("p");
+	description.classList.add("weather--card_description");
+	description.textContent = emojiWeather(weather) + " " + weather.list[0].weather[0].description;
+
+	card.appendChild(title);
+	card.appendChild(temp);
+	card.appendChild(description);
+
+	weatherInfo.appendChild(card);
 }
 
-async function displayCompare() {
-	e.preventDefault();
+async function displayCompare(e) {
+    e.preventDefault();
 	city_name = searchInput.value;
 	let weather = await getWeather(city_name);
 	let temperature = Math.round(weather.list[0].main.temp - 273.15);
@@ -147,19 +160,21 @@ async function displayCompare() {
 	weatherInfo.appendChild(card);
 }
 
-searchInput.addEventListener("keyup", async (e) => {
-	const datalist = document.querySelectorAll("search--form_option");
-	datalist.forEach((option) => option.remove());
+searchInput.addEventListener("keydown", async (e) => {
+    if (e.target.value.length < 3) {
+        return;
+    }
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        return;
+    }
+
+    await removeDatalist();
 
 	city_name = e.target.value;
 	let cities = await getCities(city_name);
 
 	for (const city of cities) {
 		let optionValue = city.name + ", " + city.country + ", " + city.state;
-
-		if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-			continue;
-		}
 		if (!city.state) {
 			optionValue = city.name + ", " + city.country;
 		}
@@ -172,7 +187,8 @@ searchInput.addEventListener("keyup", async (e) => {
 });
 
 searchButton.addEventListener("click", async (e) => {
-	displayWeather(e);
+    displayWeather(e);
+    removeDatalist();
 });
 
 compareButton.addEventListener("click", async (e) => {
